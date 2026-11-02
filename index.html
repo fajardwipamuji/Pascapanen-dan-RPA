@@ -3,427 +3,754 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Ajar Agribisnis Ternak - SMAKDA</title>
+    <title>Pascapanen dan RPA Agribisnis Ternak SMAKDA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399',
+                            500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b',
+                        },
+                        teal: {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                            500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'pop-in': 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        popIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                        spin: { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #f0fdf4; 
-        }
-        .tab-content { 
-            display: none; 
-            animation: fadeIn 0.4s ease-in-out; 
-        }
-        .tab-content.active { 
-            display: block; 
-        }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
+        body { background-color: #f0fdf4; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #ecfdf5; }
+        ::-webkit-scrollbar-thumb { background: #059669; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #047857; }
+        
+        /* Glassmorphism effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
         /* Loading Overlay */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9); z-index: 9999;
+            background: rgba(255, 255, 255, 0.95); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .spinner {
-            border: 4px solid #dcfce7; border-top: 4px solid #16a34a;
+            border: 4px solid #d1fae5; border-top: 4px solid #10b981;
             border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-gray-800 antialiased min-h-screen flex flex-col relative">
 
     <!-- Loading Overlay Init -->
     <div id="loadingOverlay">
         <div class="spinner mb-4"></div>
-        <h2 class="text-xl font-bold text-green-700">Menghubungkan ke Database...</h2>
-        <p class="text-sm text-slate-500 mt-2">Mengambil data murid SMAKDA</p>
+        <h2 class="text-xl font-bold text-emerald-700">Menghubungkan ke Database...</h2>
+        <p class="text-sm text-gray-500 mt-2">Mengambil data murid SMAKDA</p>
     </div>
 
-    <!-- Modal Alert Custom -->
-    <div id="customModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 px-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center transform scale-95 transition-transform duration-300">
-            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 text-3xl"></div>
-            <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mb-2"></h3>
-            <p id="modalMessage" class="text-slate-600 mb-6 text-sm"></p>
-            <button onclick="closeModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-xl transition-colors">Tutup</button>
+    <!-- Modal Overlay (Hidden by default) -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity px-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-emerald-100 mb-4" id="modalIconContainer">
+                    <i id="modalIcon" class="fas fa-check text-4xl text-emerald-600"></i>
+                </div>
+                <h3 id="modalTitle" class="text-2xl font-bold text-gray-900 mb-2">Berhasil!</h3>
+                <p id="modalMessage" class="text-gray-600 mb-6 text-sm md:text-base">Aksi telah berhasil dilakukan.</p>
+                <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200">
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-green-700 to-emerald-600 text-white shadow-lg sticky top-0 z-40">
-        <div class="max-w-5xl mx-auto px-4 py-4 md:py-6 flex items-center gap-4">
-            <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                <i class="fas fa-seedling text-2xl md:text-3xl"></i>
-            </div>
-            <div>
-                <h1 class="text-xl md:text-2xl font-bold leading-tight">Media Ajar Agribisnis Ternak</h1>
-                <p class="text-green-100 text-xs md:text-sm mt-1 opacity-90"><i class="fas fa-school mr-1"></i> SMKN 2 Purbalingga (SMAKDA)</p>
-            </div>
-        </div>
+    <!-- Header Section -->
+    <header class="bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 text-white shadow-xl pt-14 pb-20 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 transform -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-80 h-80 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 transform translate-x-1/3 translate-y-1/3"></div>
         
-        <!-- Tab Navigasi -->
-        <div class="max-w-5xl mx-auto px-2">
-            <div class="flex overflow-x-auto gap-1 pb-2 scrollbar-hide">
-                <button onclick="switchTab('tab-fcr')" id="btn-tab-fcr" class="tab-btn active shrink-0 bg-white text-green-700 font-semibold px-4 py-2.5 rounded-t-lg text-sm transition-colors border-b-4 border-white flex items-center gap-2">
-                    <i class="fas fa-calculator"></i> Analisis FCR & IP
-                </button>
-                <button onclick="switchTab('tab-rpa')" id="btn-tab-rpa" class="tab-btn shrink-0 bg-green-800/40 hover:bg-white/20 text-white font-medium px-4 py-2.5 rounded-t-lg text-sm transition-colors border-b-4 border-transparent flex items-center gap-2">
-                    <i class="fas fa-cut"></i> Prosedur RPA
-                </button>
-                <button onclick="switchTab('tab-evaluasi')" id="btn-tab-evaluasi" class="tab-btn shrink-0 bg-green-800/40 hover:bg-white/20 text-white font-medium px-4 py-2.5 rounded-t-lg text-sm transition-colors border-b-4 border-transparent flex items-center gap-2">
-                    <i class="fas fa-upload"></i> Evaluasi & Proyek
-                </button>
+        <div class="max-w-6xl mx-auto px-6 text-center relative z-10">
+            <div class="inline-flex items-center justify-center p-4 bg-white/20 backdrop-blur-md rounded-2xl mb-6 shadow-lg border border-white/30">
+                <i class="fas fa-seedling text-4xl text-emerald-100"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 drop-shadow-md">
+                Agribisnis Ternak Unggas
+            </h1>
+            <h2 class="text-xl md:text-2xl text-emerald-100 font-medium mb-6">SMK Negeri 2 Purbalingga (SMAKDA)</h2>
+            <div class="inline-block bg-teal-900/50 px-6 py-2 rounded-full border border-teal-500/30">
+                <p class="text-emerald-50 text-sm md:text-base font-semibold flex items-center justify-center gap-2">
+                    <i class="fas fa-chalkboard-teacher text-teal-300"></i> Instruktur: Bapak Fajar S.Pt.
+                </p>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-6 md:py-8 min-h-screen">
+    <!-- Navigation Tabs -->
+    <nav class="max-w-6xl mx-auto px-4 -mt-10 w-full z-20 relative">
+        <div class="flex flex-col md:flex-row bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+            <button id="btn-tab1" onclick="switchTab('tab1')" class="tab-btn flex-1 py-4 md:py-5 px-6 font-bold text-sm md:text-base flex items-center justify-center gap-3 transition-all duration-300 bg-emerald-600 text-white shadow-inner">
+                <i class="fas fa-calculator text-lg md:text-xl"></i> 1. Analisis Performa Panen
+            </button>
+            <button id="btn-tab2" onclick="switchTab('tab2')" class="tab-btn flex-1 py-4 md:py-5 px-6 font-bold text-sm md:text-base flex items-center justify-center gap-3 transition-all duration-300 bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700">
+                <i class="fas fa-industry text-lg md:text-xl"></i> 2. Prosedur RPA (Rumah Potong)
+            </button>
+            <button id="btn-tab3" onclick="switchTab('tab3')" class="tab-btn flex-1 py-4 md:py-5 px-6 font-bold text-sm md:text-base flex items-center justify-center gap-3 transition-all duration-300 bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700">
+                <i class="fas fa-clipboard-check text-lg md:text-xl"></i> 3. Evaluasi & Upload Proyek
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto px-4 py-12 flex-grow w-full">
         
-        <!-- ==================== TAB 1: ANALISIS FCR & IP ==================== -->
-        <section id="tab-fcr" class="tab-content active">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-blue-100 text-blue-600 p-2 rounded-lg"><i class="fas fa-book-open text-xl"></i></div>
-                    <h2 class="text-xl font-bold text-slate-800">Materi: Evaluasi Pasca Panen</h2>
+        <!-- ========================================== -->
+        <!-- TAB 1: Manajemen Pasca Panen & Analisis    -->
+        <!-- ========================================== -->
+        <div id="tab1" class="tab-content active space-y-8 animate-fade-in">
+            
+            <div class="glass-card rounded-2xl p-6 md:p-8 shadow-lg">
+                <div class="flex items-center gap-4 mb-6 border-b border-emerald-100 pb-4">
+                    <div class="bg-emerald-100 p-3 rounded-xl text-emerald-600">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-emerald-900">Manajemen Pasca Panen</h2>
+                        <p class="text-emerald-600 font-medium text-sm">Evaluasi Kinerja Pemeliharaan Broiler</p>
+                    </div>
                 </div>
-                <p class="text-slate-600 mb-4 text-sm md:text-base leading-relaxed">
-                    Setelah pemeliharaan ayam pedaging selesai, peternak wajib mengevaluasi kinerjanya. Dua indikator utama yang digunakan adalah <strong>FCR (Feed Conversion Ratio)</strong> dan <strong>IP (Indeks Performa)</strong>.
+                <p class="text-gray-700 leading-relaxed text-base md:text-lg mb-4 text-justify">
+                    Setelah proses panen selesai, pekerjaan seorang peternak sejati belum berakhir. Tahap paling krusial untuk mengevaluasi apakah sebuah periode pemeliharaan ayam pedaging (broiler) menguntungkan atau merugikan adalah dengan melakukan perhitungan analisis performa. Tiga parameter utama yang wajib dikuasai oleh murid SMK Agribisnis Ternak adalah <strong>FCR</strong>, <strong>Difference FCR</strong>, dan <strong>Indeks Performa (IP)</strong>.
                 </p>
-
-                <div class="grid md:grid-cols-2 gap-4 mt-6">
-                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                        <h3 class="font-bold text-amber-800 mb-2 flex items-center gap-2"><i class="fas fa-weight-hanging"></i> Rumus FCR</h3>
-                        <p class="text-sm text-amber-900 mb-3">FCR mengukur seberapa efisien pakan diubah menjadi daging. Semakin kecil angkanya, semakin bagus!</p>
-                        <code class="block bg-white p-3 rounded text-sm text-center font-bold text-slate-700 border border-amber-200">
-                            FCR = Total Pakan (kg) / Total Bobot Panen (kg)
-                        </code>
-                        <div class="mt-3 bg-white/60 p-2 rounded text-xs text-amber-900">
-                            <strong>Selisih FCR = </strong> FCR Aktual - Standar FCR.<br>
-                            Jika bernilai negatif (-), berarti performa sangat istimewa (irit pakan).
-                        </div>
-                    </div>
-                    
-                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                        <h3 class="font-bold text-emerald-800 mb-2 flex items-center gap-2"><i class="fas fa-chart-line"></i> Rumus IP</h3>
-                        <p class="text-sm text-emerald-900 mb-3">IP (Indeks Performa) adalah skor komprehensif pemeliharaan. Standar ideal adalah di atas 300.</p>
-                        <code class="block bg-white p-3 rounded text-xs md:text-sm text-center font-bold text-slate-700 border border-emerald-200">
-                            IP = ((100 - % Deplesi) × Rata-rata Bobot(kg)) / (FCR × Umur(hari)) × 100
-                        </code>
-                    </div>
-                </div>
             </div>
 
-            <!-- Bagian Ambil Data Kasus -->
-            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg p-6 md:p-8 text-white relative overflow-hidden">
-                <i class="fas fa-server absolute -bottom-4 -right-4 text-9xl text-white/5"></i>
-                <div class="relative z-10">
-                    <h2 class="text-2xl font-bold text-emerald-400 mb-2"><i class="fas fa-database mr-2"></i> Tugas Praktikum: Analisis Kasus</h2>
-                    <p class="text-slate-300 text-sm mb-6">Setiap murid akan mendapatkan studi kasus peternakan yang berbeda untuk dihitung FCR dan IP-nya. Silakan pilih identitas Anda untuk mengklaim data.</p>
-                    
-                    <div class="bg-white/10 p-5 rounded-xl border border-white/20 backdrop-blur-sm max-w-lg mb-6">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-emerald-300 mb-1">Kelas</label>
-                            <select id="kasusKelas" onchange="updateKasusNameDropdown()" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500">
-                                <option value="" disabled selected>-- Pilih Kelas --</option>
-                            </select>
-                        </div>
-                        <div class="mb-5">
-                            <label class="block text-sm font-medium text-emerald-300 mb-1">Nama Lengkap</label>
-                            <select id="kasusNama" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 disabled:opacity-50" disabled>
-                                <option value="" disabled selected>-- Pilih Kelas Dahulu --</option>
-                            </select>
-                        </div>
-                        <button id="btnAmbilData" onclick="ambilDataKasus()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70">
-                            <i class="fas fa-cloud-download-alt"></i> Ambil Kasus Saya
-                        </button>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- FCR Theory -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border-t-4 border-teal-500 animate-slide-up" style="animation-delay: 0.1s;">
+                    <h3 class="text-xl font-bold text-teal-800 mb-3 flex items-center gap-2">
+                        <i class="fas fa-weight-hanging text-teal-500"></i> FCR (Feed Conversion Ratio)
+                    </h3>
+                    <p class="text-gray-600 text-sm md:text-base mb-4 text-justify">
+                        FCR adalah rasio konversi pakan. Angka ini menunjukkan berapa kilogram pakan yang dihabiskan untuk menghasilkan 1 kilogram bobot hidup ayam. <strong>Semakin kecil angka FCR, semakin efisien dan bagus kinerja peternakan.</strong>
+                    </p>
+                    <div class="bg-teal-50 rounded-xl p-4 text-center border border-teal-200 mb-4">
+                        <p class="text-teal-900 font-bold text-lg">Rumus FCR:</p>
+                        <p class="text-teal-700 font-mono font-bold mt-1">Total Pakan (kg) / Total Bobot Panen (kg)</p>
                     </div>
-
-                    <!-- Hasil Data (Hidden by default) -->
-                    <div id="hasilKasus" class="hidden bg-white text-slate-800 rounded-xl p-5 shadow-inner">
-                        <div class="border-b border-slate-200 pb-3 mb-4 flex justify-between items-center">
-                            <h3 class="font-bold text-lg text-emerald-700">Data Peternakan Anda</h3>
-                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200" id="kasusIDInfo"></span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-4 text-sm">
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Populasi Awal</p><p class="font-bold text-lg" id="valPop">0 <span class="text-xs font-normal text-slate-500">ekor</span></p></div>
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Ayam Panen</p><p class="font-bold text-lg" id="valPanen">0 <span class="text-xs font-normal text-slate-500">ekor</span></p></div>
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Kematian (Deplesi)</p><p class="font-bold text-lg text-red-500" id="valDeplesi">0 <span class="text-xs font-normal">ekor</span></p></div>
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Total Pakan</p><p class="font-bold text-lg" id="valPakan">0 <span class="text-xs font-normal text-slate-500">kg</span></p></div>
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Total Bobot Panen</p><p class="font-bold text-lg" id="valBobot">0 <span class="text-xs font-normal text-slate-500">kg</span></p></div>
-                            <div><p class="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Umur Panen</p><p class="font-bold text-lg" id="valUmur">0 <span class="text-xs font-normal text-slate-500">hari</span></p></div>
-                        </div>
-                        <div class="mt-5 p-4 bg-emerald-50 rounded-lg border border-emerald-200 flex items-center justify-between">
-                            <div>
-                                <p class="text-emerald-800 font-bold text-sm">Target Standar FCR</p>
-                                <p class="text-xs text-emerald-600 mt-0.5">Bandingkan dengan hasil hitungan FCR Aktual Anda nanti.</p>
-                            </div>
-                            <div class="text-2xl font-black text-emerald-600 bg-white px-4 py-1.5 rounded shadow-sm border border-emerald-100" id="valStandar">0.00</div>
-                        </div>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="font-bold text-gray-800 text-sm mb-1"><i class="fas fa-info-circle text-blue-500"></i> Contoh Perhitungan:</p>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>Total Pakan = 12.000 kg</li>
+                            <li>Total Bobot Panen = 8.000 kg</li>
+                            <li class="font-bold text-teal-700 mt-2 border-t pt-2">FCR = 12.000 / 8.000 = 1.50</li>
+                            <li class="italic text-xs mt-1 text-gray-500">(Artinya butuh 1.5 kg pakan untuk bentuk 1 kg daging)</li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- ==================== TAB 2: PROSEDUR RPA ==================== -->
-        <section id="tab-rpa" class="tab-content">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 md:p-8 bg-green-50/50 border-b border-green-100">
-                    <h2 class="text-2xl font-bold text-green-800 mb-2">Prosedur Rumah Potong Hewan (RPA)</h2>
-                    <p class="text-slate-600">Pelajari standar ASUH (Aman, Sehat, Utuh, Halal) dan tahapan pemrosesan karkas ayam di tingkat industri.</p>
-                </div>
-                
-                <div class="p-6 md:p-8">
-                    <!-- Steps RPA -->
-                    <div class="space-y-6 mb-8">
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 shrink-0 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">1</div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Penerimaan & Penggantungan (Shackling)</h3>
-                                <p class="text-slate-600 text-sm mt-1">Ayam hidup diistirahatkan, kemudian digantung pada konveyor. Ini bertujuan menenangkan ayam agar tidak stres, yang dapat merusak kualitas daging.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 shrink-0 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">2</div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Pemingsanan (Stunning)</h3>
-                                <p class="text-slate-600 text-sm mt-1">Kepala ayam dilewatkan pada aliran listrik lemah (waterbath stunner). Tujuannya membuat ayam pingsan sehingga tidak merasa sakit saat disembelih, sesuai asas animal welfare.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 shrink-0 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">3</div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Penyembelihan (Killing & Bleeding)</h3>
-                                <p class="text-slate-600 text-sm mt-1">Dilakukan oleh Juru Sembelih Halal (JULEHA). Syarat Islam: Membaca Basmalah, pisau sangat tajam, dan memutus 3 saluran (napas, makan, darah/vena jugularis). Darah kemudian dibiarkan tuntas.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 shrink-0 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">4</div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Peredaman (Scalding) & Pencabutan Bulu (Plucking)</h3>
-                                <p class="text-slate-600 text-sm mt-1">Bangkai direndam air hangat (50-60°C) agar pori-pori kulit terbuka. Selanjutnya masuk ke mesin *plucker* (jari karet putar) yang merontokkan bulu secara otomatis dan cepat tanpa merusak kulit.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 shrink-0 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">5</div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Pengeluaran Jeroan (Evisceration) & Pencucian</h3>
-                                <p class="text-slate-600 text-sm mt-1">Organ dalam dikeluarkan. Jeroan merah (hati, jantung) dan jeroan hijau (usus, empedu) dipisah. Karkas kemudian dicuci bersih dengan air mengalir bertekanan.</p>
-                            </div>
-                        </div>
+                <!-- Diff FCR Theory -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border-t-4 border-emerald-500 animate-slide-up" style="animation-delay: 0.2s;">
+                    <h3 class="text-xl font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                        <i class="fas fa-balance-scale text-emerald-500"></i> Difference FCR
+                    </h3>
+                    <p class="text-gray-600 text-sm md:text-base mb-4 text-justify">
+                        Difference FCR adalah selisih antara FCR Aktual yang diraih kandang dengan FCR Standar *strain* ayam (misal Cobb/Ross) pada bobot badan tertentu. Ini digunakan untuk melihat apakah konversi pakan kita sesuai potensi genetiknya atau terjadi pemborosan.
+                    </p>
+                    <div class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-200 mb-4">
+                        <p class="text-emerald-900 font-bold text-lg">Rumus Difference FCR:</p>
+                        <p class="text-emerald-700 font-mono font-bold mt-1">FCR Aktual - FCR Standar</p>
                     </div>
-
-                    <!-- Video YouTube Embedding -->
-                    <div class="bg-slate-900 rounded-xl p-3 md:p-4 mb-8 shadow-md">
-                        <div class="flex items-center justify-between mb-3 px-2">
-                            <h3 class="font-bold text-emerald-400"><i class="fab fa-youtube text-red-500 mr-2"></i> Referensi Video Praktik</h3>
-                            <span class="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded">Bapak Fajar S.Pt.</span>
-                        </div>
-                        <div class="relative w-full pb-[56.25%] h-0 rounded-lg overflow-hidden bg-black">
-                            <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/JoFZRc8nqlI?si=vLfkh6kk0gsPzbwj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        </div>
-                        <p class="text-slate-400 text-xs mt-3 text-center">Catatan Revisi: Untuk proses marinasi ayam di video, bumbu yang digunakan adalah <strong>kunyit</strong> (bukan jahe).</p>
-                    </div>
-
-                    <!-- Proyek -->
-                    <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200 p-5 md:p-6 border-l-4 border-l-orange-500">
-                        <h3 class="font-bold text-orange-800 text-lg mb-2"><i class="fas fa-paint-brush mr-2"></i> Misi Proyek Kelas</h3>
-                        <p class="text-slate-700 text-sm mb-4">Buatlah sebuah <strong>Infografis Kreatif</strong> di buku tulis Anda mengenai tahapan RPA yang telah dipelajari. Buat semenarik dan se-estetis mungkin!</p>
-                        <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
-                            <li>Sertakan urutan alur proses RPA dari awal hingga akhir.</li>
-                            <li>Tuliskan detail penting seperti suhu scalding, syarat halal potong, fungsi stunning, dll.</li>
-                            <li>Gunakan warna dan ikon/gambar pendukung (bisa digambar manual).</li>
-                            <li>Foto hasilnya dengan jelas untuk diunggah di tab <strong>Evaluasi</strong>.</li>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="font-bold text-gray-800 text-sm mb-1"><i class="fas fa-info-circle text-blue-500"></i> Contoh Perhitungan:</p>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>FCR Aktual (Kandang) = 1.65</li>
+                            <li>FCR Standar (Buku Panduan) = 1.55</li>
+                            <li class="font-bold text-emerald-700 mt-2 border-t pt-2">Diff = 1.65 - 1.55 = +0.10</li>
+                            <li class="italic text-xs mt-1 text-red-500">(Jika positif = boros pakan, Jika negatif = sangat efisien)</li>
                         </ul>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- ==================== TAB 3: EVALUASI & PROYEK ==================== -->
-        <section id="tab-evaluasi" class="tab-content">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-700 to-indigo-600 p-6 md:p-8 text-white">
-                    <h2 class="text-2xl font-bold mb-2"><i class="fas fa-file-signature mr-2"></i> Penilaian Kompetensi Terpadu</h2>
-                    <p class="text-blue-100 text-sm">Selesaikan Uji Kognitif (Benar/Salah & Pilihan Ganda Kompleks) dan kumpulkan link laporan proyek Anda dalam satu formulir ini agar nilai langsung masuk ke database.</p>
-                </div>
-
-                <form id="evaluasiForm" class="p-6 md:p-8" onsubmit="submitEvaluasi(event)">
+            <!-- Indeks Performa Section -->
+            <div class="bg-gradient-to-r from-teal-800 to-emerald-800 rounded-2xl p-1 shadow-lg animate-slide-up" style="animation-delay: 0.3s;">
+                <div class="bg-white rounded-xl p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-emerald-900 mb-4 flex items-center gap-3 border-b pb-4">
+                        <i class="fas fa-trophy text-yellow-500 text-3xl"></i> Indeks Performa (IP)
+                    </h3>
+                    <p class="text-gray-700 text-base md:text-lg mb-6 text-justify">
+                        Indeks Performa (IP) adalah nilai kumulatif yang menilai keberhasilan peternakan secara utuh. Rumus ini menggabungkan tingkat kehidupan (Deplesi), rata-rata bobot badan, umur panen, dan efisiensi pakan (FCR). <strong>Nilai IP ideal di atas 300, dan semakin tinggi (misal IP 400) berarti sangat sukses.</strong>
+                    </p>
                     
-                    <!-- Identitas -->
-                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-8">
-                        <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">1. Identitas Murid</h3>
-                        <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-emerald-900 text-white rounded-xl p-6 text-center shadow-inner mb-6">
+                        <p class="text-emerald-200 font-semibold mb-3 text-sm md:text-base uppercase tracking-wider">Rumus Indeks Performa (IP):</p>
+                        <p class="text-lg md:text-2xl font-bold font-mono tracking-tight leading-relaxed">
+                            <span class="text-yellow-400">[(100 - %Deplesi) x Bobot Rata-rata (kg)]</span> 
+                            <br class="md:hidden"> 
+                            <span class="text-emerald-400 mx-2 text-xl">/</span>
+                            <br class="md:hidden"> 
+                            <span class="text-teal-300">[FCR x Umur Rata-rata Panen]</span> 
+                            <br class="md:hidden"> 
+                            <span class="text-white mx-2">x 100</span>
+                        </p>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-xl p-5 border border-amber-200">
+                        <h4 class="font-bold text-amber-900 mb-3 text-lg"><i class="fas fa-list-ol text-amber-600 mr-2"></i>Contoh Perhitungan Lengkap:</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Kelas <span class="text-red-500">*</span></label>
-                                <select id="evalKelas" onchange="updateEvalNameDropdown()" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <ul class="space-y-2 list-disc pl-5">
+                                    <li>Populasi Awal: 10.000 ekor</li>
+                                    <li>Kematian/Deplesi: 400 ekor <br><span class="text-xs text-amber-700">→ %Deplesi = (400/10.000) x 100% = 4%</span></li>
+                                    <li>Total Pakan: 27.000 kg</li>
+                                    <li>Total Panen: 18.000 kg</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <ul class="space-y-2 list-disc pl-5">
+                                    <li>Bobot Rata-rata = 18.000 kg / 9.600 ekor = 1.875 kg</li>
+                                    <li>FCR = 27.000 / 18.000 = 1.50</li>
+                                    <li>Umur Panen: 32 hari</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-white rounded-lg border border-amber-100 font-mono text-center">
+                            IP = [ (100 - 4) x 1.875 ] / [ 1.50 x 32 ] x 100 <br>
+                            IP = [ 96 x 1.875 ] / [ 48 ] x 100 <br>
+                            IP = 180 / 48 x 100 = <span class="font-bold text-xl text-green-600">375</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tugas Praktikum Interactive Form (Connected to DB) -->
+            <div class="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden animate-slide-up" style="animation-delay: 0.4s;">
+                <i class="fas fa-laptop-code absolute -bottom-10 -right-10 text-9xl text-white opacity-10"></i>
+                
+                <div class="relative z-10">
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">Tugas Praktikum Analisis</h2>
+                    <p class="text-indigo-200 mb-8 max-w-2xl text-sm md:text-base">
+                        Setiap murid akan mendapatkan kasus peternakan yang berbeda untuk mencegah saling contek. Silakan pilih kelas, masukkan nama lengkap Anda, lalu klik tombol untuk mengambil data. <strong>Hitung FCR dan IP dari data tersebut di buku tulis Anda beserta langkah-langkahnya!</strong>
+                    </p>
+
+                    <form id="tugasForm" onsubmit="ambilDataKasus(event)" class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-inner">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-indigo-100 text-sm font-bold mb-2">Pilih Kelas</label>
+                                <select id="inputKelas" onchange="updateKasusNameDropdown()" required class="w-full bg-white text-gray-800 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-400 focus:border-transparent transition-all">
                                     <option value="" disabled selected>-- Pilih Kelas --</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                                <select id="evalNama" class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" required disabled>
+                                <label class="block text-indigo-100 text-sm font-bold mb-2">Nama Lengkap Murid</label>
+                                <select id="inputNama" required disabled class="w-full bg-gray-200 text-gray-800 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-400 focus:border-transparent transition-all disabled:opacity-50">
                                     <option value="" disabled selected>-- Pilih Kelas Dahulu --</option>
                                 </select>
                             </div>
                         </div>
-                    </div>
+                        <button type="submit" id="btnAmbilData" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-lg">
+                            <i class="fas fa-cloud-download-alt"></i> Ambil Data Tugas Praktikum
+                        </button>
+                    </form>
 
-                    <!-- Kuis Kognitif -->
-                    <h3 class="font-bold text-slate-800 mb-4 text-lg border-b border-slate-200 pb-2">2. Uji Kompetensi Kognitif (HOTS)</h3>
-                    <div class="space-y-6 mb-8" id="kuisContainer">
-                        
-                        <!-- Q1 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">1. Jika FCR aktual adalah 1.65 dan standar FCR adalah 1.55, maka peternak mengalami kerugian efisiensi pakan.</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q1" value="Benar" required class="w-4 h-4 text-blue-600"> Benar</label>
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q1" value="Salah" class="w-4 h-4 text-blue-600"> Salah</label>
+                    <!-- Result Container -->
+                    <div id="datasetResult" class="hidden mt-8 bg-white rounded-2xl p-6 md:p-8 shadow-xl border-l-8 border-indigo-500 animate-pop-in">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Data Peternakan Kasus Khusus</h3>
+                                <p class="text-gray-500 text-sm mt-1">Ditugaskan kepada: <span id="resNama" class="font-bold text-indigo-600"></span> (<span id="resKelas" class="font-semibold text-gray-700"></span>)</p>
                             </div>
-                        </div>
-                        <!-- Q2 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">2. Semakin tinggi persentase deplesi (kematian), maka nilai Indeks Performa (IP) akan semakin naik.</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q2" value="Benar" required class="w-4 h-4 text-blue-600"> Benar</label>
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q2" value="Salah" class="w-4 h-4 text-blue-600"> Salah</label>
-                            </div>
-                        </div>
-                        <!-- Q3 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">3. Tujuan utama proses "stunning" di RPA adalah untuk mempercepat kematian ayam sebelum disembelih.</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q3" value="Benar" required class="w-4 h-4 text-blue-600"> Benar</label>
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q3" value="Salah" class="w-4 h-4 text-blue-600"> Salah</label>
-                            </div>
-                        </div>
-                        <!-- Q4 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">4. Salah satu syarat pemotongan ayam halal adalah memutus urat nadi leher (vena jugularis) dalam sekali sayatan tanpa mengangkat pisau.</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q4" value="Benar" required class="w-4 h-4 text-blue-600"> Benar</label>
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q4" value="Salah" class="w-4 h-4 text-blue-600"> Salah</label>
-                            </div>
-                        </div>
-                        <!-- Q5 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">5. Suhu air pada tahap scalding yang terlalu panas (>70°C) dapat menyebabkan daging ayam menjadi matang sebagian dan merusak karkas.</p>
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q5" value="Benar" required class="w-4 h-4 text-blue-600"> Benar</label>
-                                <label class="flex items-center gap-2 text-sm"><input type="radio" name="q5" value="Salah" class="w-4 h-4 text-blue-600"> Salah</label>
+                            <div class="mt-3 md:mt-0 bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-mono text-sm font-bold">
+                                KODE: <span id="resKode"></span>
                             </div>
                         </div>
                         
-                        <!-- PG Kompleks -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">6. Pernyataan yang TEPAT mengenai variabel penghitungan Indeks Performa (IP) adalah...</p>
-                            <div class="space-y-2">
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q6" value="A" required class="w-4 h-4 mt-0.5 text-blue-600"> A. IP berbanding lurus dengan FCR dan Umur Panen.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q6" value="B" class="w-4 h-4 mt-0.5 text-blue-600"> B. IP berbanding terbalik dengan Rata-rata Bobot dan berbanding lurus dengan Deplesi.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q6" value="C" class="w-4 h-4 mt-0.5 text-blue-600"> C. IP berbanding lurus dengan Rata-rata Bobot dan berbanding terbalik dengan FCR.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q6" value="D" class="w-4 h-4 mt-0.5 text-blue-600"> D. Umur panen tidak mempengaruhi perhitungan IP, hanya bobot dan pakan.</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <p class="text-gray-500 text-xs font-bold uppercase mb-1">Populasi Awal</p>
+                                <p class="text-2xl font-bold text-gray-800"><span id="resPop">0</span> <span class="text-sm font-normal text-gray-500">ekor</span></p>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                                <p class="text-red-500 text-xs font-bold uppercase mb-1">Kematian (Deplesi)</p>
+                                <p class="text-2xl font-bold text-red-700"><span id="resDep">0</span> <span class="text-sm font-normal text-red-500">ekor</span></p>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                <p class="text-amber-600 text-xs font-bold uppercase mb-1">Pakan Terpakai</p>
+                                <p class="text-2xl font-bold text-amber-800"><span id="resFeed">0</span> <span class="text-sm font-normal text-amber-600">kg</span></p>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <p class="text-emerald-600 text-xs font-bold uppercase mb-1">Bobot Panen</p>
+                                <p class="text-2xl font-bold text-emerald-800"><span id="resWeight">0</span> <span class="text-sm font-normal text-emerald-600">kg</span></p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <p class="text-blue-500 text-xs font-bold uppercase mb-1">Umur Panen</p>
+                                <p class="text-2xl font-bold text-blue-800"><span id="resAge">0</span> <span class="text-sm font-normal text-blue-500">hari</span></p>
+                            </div>
+                            <div id="stdFCRContainer" class="hidden bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                <p class="text-purple-600 text-xs font-bold uppercase mb-1">Target FCR</p>
+                                <p class="text-2xl font-bold text-purple-800"><span id="resStdFCR">0.00</span></p>
                             </div>
                         </div>
-                        <!-- Q7 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">7. Manakah kelompok saluran yang WAJIB terputus saat penyembelihan sesuai standar syariat Islam?</p>
-                            <div class="space-y-2">
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q7" value="A" required class="w-4 h-4 mt-0.5 text-blue-600"> A. Trakhea, Esofagus, dan Sumsum tulang belakang.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q7" value="B" class="w-4 h-4 mt-0.5 text-blue-600"> B. Trakhea, Esofagus, dan Vena Jugularis.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q7" value="C" class="w-4 h-4 mt-0.5 text-blue-600"> C. Arteri Karotis, Vena Jugularis, dan Usus Buntu.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q7" value="D" class="w-4 h-4 mt-0.5 text-blue-600"> D. Esofagus, Arteri, dan Persendian Leher.</label>
-                            </div>
-                        </div>
-                        <!-- Q8 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">8. Apa dampak utama jika darah ayam tidak dibiarkan tuntas keluar (bleeding sempurna) setelah dipotong?</p>
-                            <div class="space-y-2">
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q8" value="A" required class="w-4 h-4 mt-0.5 text-blue-600"> A. Karkas menjadi cepat busuk dan kulit berwarna kemerahan.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q8" value="B" class="w-4 h-4 mt-0.5 text-blue-600"> B. Daging menjadi lebih gurih karena terendam darah segar.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q8" value="C" class="w-4 h-4 mt-0.5 text-blue-600"> C. Mesin plucker akan kesulitan mencabut bulu ayam.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q8" value="D" class="w-4 h-4 mt-0.5 text-blue-600"> D. Bobot karkas akan meningkat secara signifikan di pasar.</label>
-                            </div>
-                        </div>
-                        <!-- Q9 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">9. Pada tahap Evisceration, mengapa pemisahan jeroan merah dan jeroan hijau sangat krusial?</p>
-                            <div class="space-y-2">
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q9" value="A" required class="w-4 h-4 mt-0.5 text-blue-600"> A. Untuk mencegah bakteri usus (hijau) mengkontaminasi hati dan jantung (merah).</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q9" value="B" class="w-4 h-4 mt-0.5 text-blue-600"> B. Karena jeroan merah harus direbus bersamaan dengan kulit ayam.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q9" value="C" class="w-4 h-4 mt-0.5 text-blue-600"> C. Agar empedu dapat diambil untuk diolah menjadi pakan ternak.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q9" value="D" class="w-4 h-4 mt-0.5 text-blue-600"> D. Sebagai syarat mutlak keutuhan standar ASUH pada karkas ayam utuh.</label>
-                            </div>
-                        </div>
-                        <!-- Q10 -->
-                        <div class="kuis-item">
-                            <p class="font-medium text-slate-800 text-sm mb-2">10. Jika suatu peternakan panen lebih awal (umur muda), namun sisa pakannya sangat sedikit, kemungkinan indikator apa yang terlihat?</p>
-                            <div class="space-y-2">
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q10" value="A" required class="w-4 h-4 mt-0.5 text-blue-600"> A. FCR akan sangat tinggi (buruk) karena pakan habis dimakan.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q10" value="B" class="w-4 h-4 mt-0.5 text-blue-600"> B. FCR akan rendah (baik), tetapi perlu dicek apakah target bobotnya tercapai.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q10" value="C" class="w-4 h-4 mt-0.5 text-blue-600"> C. IP dipastikan di atas 400 karena pakan irit.</label>
-                                <label class="flex items-start gap-2 text-sm"><input type="radio" name="q10" value="D" class="w-4 h-4 mt-0.5 text-blue-600"> D. Deplesi pasti mencapai angka 0%.</label>
-                            </div>
+
+                        <div class="mt-8 bg-indigo-50 p-5 rounded-xl border border-indigo-200">
+                            <h4 class="font-bold text-indigo-900 mb-2"><i class="fas fa-tasks text-indigo-600 mr-2"></i>Misi Anda di Buku Tulis:</h4>
+                            <ol class="list-decimal pl-5 text-indigo-800 space-y-1 text-sm md:text-base font-medium">
+                                <li>Hitung Persentase Kematian (% Deplesi).</li>
+                                <li>Hitung Bobot Rata-rata per Ekor (Ingat: Populasi panen = Populasi awal - Kematian).</li>
+                                <li>Hitung Nilai FCR Aktual.</li>
+                                <li>Bandingkan FCR Aktual dengan Standar FCR (Hitung Selisihnya).</li>
+                                <li>Hitung Indeks Performa (IP) berdasarkan data tersebut.</li>
+                            </ol>
                         </div>
                     </div>
-
-                    <!-- Upload Link -->
-                    <h3 class="font-bold text-slate-800 mb-4 text-lg border-b border-slate-200 pb-2">3. Pengumpulan Proyek (Link Google Drive)</h3>
-                    <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-100 mb-8">
-                        <p class="text-xs text-indigo-700 mb-4"><em>*Pastikan file foto tugas Anda (LKPD FCR & Buku Tulis RPA) sudah di-upload ke Google Drive dan akses linknya diatur ke <strong>"Siapa saja yang memiliki link / Anyone with the link"</strong>.</em></p>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Link Foto Lembar Kerja Analisis FCR & IP <span class="text-red-500">*</span></label>
-                                <input type="url" id="linkFCR" required placeholder="https://drive.google.com/file/d/..." class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Link Foto Infografis Prosedur RPA <span class="text-red-500">*</span></label>
-                                <input type="url" id="linkRPA" required placeholder="https://drive.google.com/file/d/..." class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tombol Submit -->
-                    <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg">
-                        <i class="fas fa-paper-plane"></i> Kirim Evaluasi & Tugas
-                    </button>
-                </form>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: Prosedur RPA (Rumah Potong Ayam)    -->
+        <!-- ========================================== -->
+        <div id="tab2" class="tab-content space-y-8 animate-fade-in">
+            
+            <div class="glass-card rounded-2xl p-6 md:p-8 shadow-lg">
+                <div class="flex items-center gap-4 mb-4 border-b border-teal-100 pb-4">
+                    <div class="bg-teal-100 p-3 rounded-xl text-teal-600">
+                        <i class="fas fa-drumstick-bite text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-teal-900">Prosedur Rumah Potong Ayam (RPA)</h2>
+                        <p class="text-teal-600 font-medium text-sm">Standar Industri Pemotongan ASUH</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-base md:text-lg text-justify">
+                    Ayam broiler yang sudah dipanen hidup (*livebird*) akan dikirim ke Rumah Potong Ayam (RPA) modern. Dalam industri pangan, hasil akhir pemotongan ini harus memenuhi standar <strong>ASUH (Aman, Sehat, Utuh, Halal)</strong>. Berikut adalah urutan komprehensif alur kerja di RPA modern.
+                </p>
+            </div>
+
+            <!-- RPA Steps Timeline / Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                <!-- Step 1-9 omitted for brevity in thought, but generating fully here -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">01</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-truck-loading text-teal-500 mr-2"></i>Penerimaan & Istirahat</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Ayam tiba di pabrik, ditimbang, lalu diistirahatkan di area yang sejuk (berkipas/sprayer) agar stres perjalanan hilang (*antemortem inspection*).</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">02</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-link text-teal-500 mr-2"></i>Penggantungan (Shackling)</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Kaki ayam digantung terbalik pada rel berjalan (*conveyor*). Ruangan dibuat agak gelap agar ayam rileks dan aliran darah mengalir ke area kepala.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">03</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-bolt text-teal-500 mr-2"></i>Stunning (Pemingsanan)</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Kepala ayam melewati bak air beraliran listrik rendah. <strong>Tujuannya murni untuk memingsankan, BUKAN mematikan.</strong> Jantung harus tetap berdetak memompa darah keluar saat dipotong.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-l-red-500 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-red-50 text-red-200 text-5xl font-extrabold p-2 opacity-50 group-hover:scale-110 transition-transform">04</div>
+                    <h3 class="text-lg font-bold text-red-800 mb-2 relative z-10"><i class="fas fa-cut text-red-500 mr-2"></i>Pemotongan (Syariat Halal)</h3>
+                    <p class="text-gray-700 text-sm text-justify relative z-10">Pemotongan manual oleh Juleha (Juru Sembelih Halal). Membaca basmalah, menggunakan pisau sangat tajam sekali tarikan, <strong>wajib memutus 3 saluran utama:</strong> Trakea (napas), Esofagus (makanan), dan Vena/Arteri leher (darah). Proses tuntas darah (bleeding) butuh waktu ~3 menit.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">05</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-hot-tub text-teal-500 mr-2"></i>Scalding (Perendaman Panas)</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Bangkai ayam direndam ke air hangat suhu spesifik <strong>50°C - 60°C selama 1.5 - 2 menit</strong>. Tujuannya hanya membuka pori-pori kulit untuk memudahkan pencabutan bulu (tidak boleh terlalu panas agar kulit tidak matang/robek).</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">06</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-fan text-teal-500 mr-2"></i>Plucking (Pencabutan Bulu)</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Ayam melewati mesin *plucker* yang memiliki jari-jari karet (*rubber fingers*) berputar cepat. Jari karet ini menampar dan mencabut bulu ayam hingga bersih tanpa melukai kulit.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">07</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-microscope text-teal-500 mr-2"></i>Evisceration (Pengeluaran Jeroan)</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Rongga perut dibelah, jeroan dikeluarkan utuh. Dilakukan pemisahan jeroan merah (hati, jantung, ampela) dan jeroan hijau (usus). Inspeksi *postmortem* dilakukan di sini untuk membuang karkas berpenyakit.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-l-blue-400 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-50 text-blue-200 text-5xl font-extrabold p-2 opacity-50 group-hover:scale-110 transition-transform">08</div>
+                    <h3 class="text-lg font-bold text-blue-800 mb-2 relative z-10"><i class="fas fa-snowflake text-blue-500 mr-2"></i>Chilling (Pendinginan Karkas)</h3>
+                    <p class="text-gray-700 text-sm text-justify relative z-10">Karkas ayam dicelup ke bak air es/chiller hingga suhu daging turun di bawah 4°C. Proses ini sangat vital untuk <strong>menghambat perkembangbiakan bakteri</strong> dan menjaga daging tetap segar.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-100 text-gray-400 text-5xl font-extrabold p-2 opacity-30 group-hover:scale-110 transition-transform">09</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 relative z-10"><i class="fas fa-pizza-slice text-teal-500 mr-2"></i>Parting & Boning</h3>
+                    <p class="text-gray-600 text-sm text-justify relative z-10">Ayam karkas utuh dipotong-potong menjadi bagian komersial (sayap, dada, paha atas, paha bawah) atau *boneless* (tanpa tulang) sesuai pesanan restoran/konsumen.</p>
+                </div>
+
+                <div class="bg-amber-100 rounded-2xl p-6 shadow-md border-l-8 border-l-amber-500 hover:shadow-lg transition-shadow group relative overflow-hidden md:col-span-2">
+                    <div class="absolute top-0 right-0 bg-amber-50 text-amber-200 text-6xl font-extrabold p-2 opacity-40 group-hover:scale-110 transition-transform">10</div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2 relative z-10"><i class="fas fa-mortar-pestle text-amber-600 mr-2"></i>Marinasi (Penambahan Bumbu)</h3>
+                    <p class="text-amber-800 text-sm md:text-base text-justify relative z-10 mb-2">
+                        Proses perendaman atau penyuntikan bumbu khusus ke dalam daging ayam agar rasa gurih meresap hingga ke tulang, biasanya untuk restoran cepat saji.
+                    </p>
+                    <div class="bg-white rounded-lg p-4 mt-3 border border-amber-300 inline-block relative z-10 shadow-sm">
+                        <p class="font-bold text-gray-900">
+                            <i class="fas fa-exclamation-triangle text-amber-500 mr-1"></i> REVISI PENTING BAPAK FAJAR:
+                        </p>
+                        <p class="text-gray-700 text-sm mt-1">
+                            Bahan alami andalan yang digunakan dalam marinasi untuk ayam industri adalah <strong>KUNYIT</strong> (bukan jahe). Kunyit memiliki peran ganda: 
+                            <span class="bg-amber-200 px-1 font-bold text-amber-900 rounded">Pewarna Kuning Alami</span> yang membuat kulit ayam terlihat segar/menarik, dan sebagai 
+                            <span class="bg-emerald-200 px-1 font-bold text-emerald-900 rounded">Zat Antibakteri Alami</span> yang memperpanjang keawetan karkas tanpa pengawet buatan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube Video Embed -->
+            <div class="bg-gray-900 rounded-3xl p-4 md:p-8 shadow-2xl relative">
+                <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <i class="fab fa-youtube text-red-500 text-3xl"></i> Referensi Video Praktik
+                        </h3>
+                        <p class="text-gray-400 text-sm mt-1">Simak baik-baik visualisasi proses pemotongan dan karkas berikut ini.</p>
+                    </div>
+                </div>
+                <div class="aspect-w-16 aspect-h-9 w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-[0_0_20px_rgba(239,68,68,0.3)] bg-black">
+                    <iframe width="100%" height="450" class="rounded-xl" src="https://www.youtube.com/embed/JoFZRc8nqlI?si=vLfkh6kk0gsPzbwj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <!-- Tugas Proyek Infografis -->
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl p-6 md:p-8 shadow-xl text-white mt-8 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 text-9xl text-white opacity-20">
+                    <i class="fas fa-paint-brush"></i>
+                </div>
+                <div class="relative z-10">
+                    <h3 class="text-2xl font-bold mb-3"><i class="fas fa-project-diagram mr-2"></i>Misi Proyek Kreatif (RPA)</h3>
+                    <p class="text-emerald-50 mb-4 text-sm md:text-base max-w-3xl">
+                        Tugas proyek Anda: <strong>Buatlah sebuah INFOGRAFIS yang digambar secara manual di buku tulis Anda</strong> berdasarkan 10 tahapan materi RPA di atas.
+                    </p>
+                    <ul class="space-y-2 text-sm font-medium bg-black/20 p-4 rounded-xl border border-white/20">
+                        <li><i class="fas fa-check-circle text-emerald-300 mr-2"></i> Buat sekreatif, seestetis, dan seinformatif mungkin (gunakan pensil warna/spidol).</li>
+                        <li><i class="fas fa-check-circle text-emerald-300 mr-2"></i> Pastikan alurnya berurutan (Penerimaan s/d Marinasi).</li>
+                        <li><i class="fas fa-check-circle text-emerald-300 mr-2"></i> Jangan lupakan detail penting, seperti: Suhu Scalding, 3 saluran potong, fungsi Kunyit, warna kulit, kebersihan bulu, atau keutuhan karkas!</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: Evaluasi & Upload Proyek            -->
+        <!-- ========================================== -->
+        <div id="tab3" class="tab-content space-y-10 animate-fade-in">
+            
+            <div class="glass-card rounded-2xl p-6 md:p-8 shadow-lg text-center">
+                <i class="fas fa-user-graduate text-5xl text-emerald-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-emerald-900 mb-2">Evaluasi Pemahaman & Laporan</h2>
+                <p class="text-gray-600">Selesaikan kuis di bawah ini (Level: Sulit), kemudian unggah foto tugas Anda.</p>
+            </div>
+
+            <form id="evaluationForm" onsubmit="submitEvaluation(event)">
+                
+                <!-- Identity Section (Connected to DB) -->
+                <div class="bg-white rounded-3xl p-6 md:p-10 shadow-xl border border-gray-100 mb-10">
+                    <h3 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-6"><i class="fas fa-id-card text-emerald-600 mr-2"></i> Identitas Murid</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Pilih Kelas</label>
+                            <select id="evalKelas" onchange="updateEvalNameDropdown()" required class="w-full bg-gray-50 text-gray-800 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap Murid</label>
+                            <select id="evalNama" required disabled class="w-full bg-gray-200 text-gray-800 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50">
+                                <option value="" disabled selected>-- Pilih Kelas Dahulu --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Section -->
+                <div class="bg-white rounded-3xl p-6 md:p-10 shadow-xl border border-gray-100 mb-10" id="quizContainer">
+                    <h3 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-6">A. Uji Kompetensi Kognitif (10 Soal)</h3>
+                    
+                    <div class="mb-8">
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                            <p class="font-bold text-blue-800">Bagian 1: Benar atau Salah (True/False)</p>
+                            <p class="text-sm text-blue-600">Pilih satu pernyataan yang tepat.</p>
+                        </div>
+
+                        <!-- Q1 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">1. Nilai Indeks Performa (IP) 400 adalah lebih buruk kinerjanya dibandingkan dengan IP 300.</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q1" value="benar" class="w-4 h-4 text-emerald-600" required> Benar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q1" value="salah" class="w-4 h-4 text-emerald-600"> Salah
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">2. Suhu air yang ideal untuk proses Scalding (Perendaman) karkas ayam di RPA adalah air mendidih antara 90°C hingga 100°C.</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q2" value="benar" class="w-4 h-4 text-emerald-600" required> Benar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q2" value="salah" class="w-4 h-4 text-emerald-600"> Salah
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">3. Angka FCR (Feed Conversion Ratio) sebesar 1.5 memiliki arti bahwa peternak membutuhkan 1.5 kg pakan untuk menghasilkan 1 kg bobot daging ayam.</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q3" value="benar" class="w-4 h-4 text-emerald-600" required> Benar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q3" value="salah" class="w-4 h-4 text-emerald-600"> Salah
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q4 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">4. Penambahan kunyit pada marinasi karkas berfungsi ganda, yaitu sebagai pewarna alami dan antibakteri.</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q4" value="benar" class="w-4 h-4 text-emerald-600" required> Benar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q4" value="salah" class="w-4 h-4 text-emerald-600"> Salah
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q5 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">5. Tujuan utama dari proses Stunning (Pemingsanan) adalah untuk mematikan ayam agar tidak merasa sakit saat disembelih.</p>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q5" value="benar" class="w-4 h-4 text-emerald-600" required> Benar
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 border rounded-lg hover:bg-gray-100 w-32">
+                                    <input type="radio" name="q5" value="salah" class="w-4 h-4 text-emerald-600"> Salah
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6 rounded-r-lg">
+                            <p class="font-bold text-purple-800">Bagian 2: Pilihan Ganda Kompleks (Checkbox)</p>
+                            <p class="text-sm text-purple-600">Pilih SEMUA jawaban yang benar (Jawaban benar bisa lebih dari satu).</p>
+                        </div>
+
+                        <!-- Q6 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">6. Manakah dari pernyataan di bawah ini yang merupakan syarat wajib pemotongan ayam sesuai syariat Halal di RPA? (Pilih >1)</p>
+                            <div class="space-y-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q6" value="a" class="mt-1 w-4 h-4 text-emerald-600"> <span>Menggunakan pisau yang sangat tajam dan tidak bergerigi.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q6" value="b" class="mt-1 w-4 h-4 text-emerald-600"> <span>Memutuskan sumsum tulang belakang (leher putus total).</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q6" value="c" class="mt-1 w-4 h-4 text-emerald-600"> <span>Juru sembelih membaca basmalah sebelum memotong.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q6" value="d" class="mt-1 w-4 h-4 text-emerald-600"> <span>Ayam direbus terlebih dahulu sebelum dipotong darahnya.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q7 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">7. Berdasarkan rumus IP (Indeks Performa), faktor apa saja yang menyebabkan nilai IP anjlok (turun/jelek)? (Pilih >1)</p>
+                            <div class="space-y-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q7" value="a" class="mt-1 w-4 h-4 text-emerald-600"> <span>Tingkat Kematian (Deplesi) yang sangat tinggi.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q7" value="b" class="mt-1 w-4 h-4 text-emerald-600"> <span>Bobot panen rata-rata yang sangat besar/berat.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q7" value="c" class="mt-1 w-4 h-4 text-emerald-600"> <span>Angka FCR yang membengkak melebihi standar.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q7" value="d" class="mt-1 w-4 h-4 text-emerald-600"> <span>Umur panen yang semakin lama mundur berhari-hari.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q8 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">8. Apa tujuan sebenarnya dari tahap Chilling (Pendinginan suhu &lt;4°C) di Rumah Potong Ayam? (Pilih >1)</p>
+                            <div class="space-y-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q8" value="a" class="mt-1 w-4 h-4 text-emerald-600"> <span>Menghambat perkembangbiakan mikroorganisme patogen.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q8" value="b" class="mt-1 w-4 h-4 text-emerald-600"> <span>Meningkatkan bobot air karkas untuk kecurangan timbangan.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q8" value="c" class="mt-1 w-4 h-4 text-emerald-600"> <span>Memperpanjang masa simpan (keawetan) daging ayam.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q9 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">9. Saluran anatomi apa saja yang WAJIB terpotong/putus saat dilakukan penyembelihan leher ayam? (Pilih >1)</p>
+                            <div class="space-y-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q9" value="a" class="mt-1 w-4 h-4 text-emerald-600"> <span>Trakea (Saluran napas / Hulqum).</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q9" value="b" class="mt-1 w-4 h-4 text-emerald-600"> <span>Esofagus (Saluran makanan / Mari').</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q9" value="c" class="mt-1 w-4 h-4 text-emerald-600"> <span>Vena Jugularis & Arteri Karotis (Pembuluh darah leher / Wadajain).</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q9" value="d" class="mt-1 w-4 h-4 text-emerald-600"> <span>Usus halus dan saluran empedu.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Q10 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <p class="font-semibold text-gray-800 mb-3">10. Alasan kuat Bapak Fajar merevisi penggunaan Jahe menjadi KUNYIT dalam proses Marinasi komersial adalah karena Kunyit memiliki sifat: (Pilih >1)</p>
+                            <div class="space-y-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q10" value="a" class="mt-1 w-4 h-4 text-emerald-600"> <span>Sebagai zat pewarna kuning alami pada karkas.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q10" value="b" class="mt-1 w-4 h-4 text-emerald-600"> <span>Membuat daging menjadi keras seperti batu.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q10" value="c" class="mt-1 w-4 h-4 text-emerald-600"> <span>Sebagai senyawa antibakteri alami untuk karkas segar.</span>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" name="q10" value="d" class="mt-1 w-4 h-4 text-emerald-600"> <span>Menghilangkan seluruh tulang pada ayam secara instan.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Proyek Form -->
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-800 rounded-3xl p-6 md:p-10 shadow-2xl relative">
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-bold text-white mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>B. Upload Laporan Proyek Bapak Fajar S.Pt.</h3>
+                        <p class="text-emerald-100 mb-8 text-sm md:text-base">Foto buku tulis Anda dengan jelas (tulisan bisa terbaca) dan pastikan format gambar berupa JPG/PNG.</p>
+                        
+                        <div class="bg-white rounded-2xl p-6 shadow-inner space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="border-2 border-dashed border-emerald-300 rounded-xl p-6 text-center hover:bg-emerald-50 transition-colors">
+                                    <i class="fas fa-link text-3xl text-emerald-500 mb-2"></i>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2 cursor-pointer">
+                                        Link Tugas Pasca Panen (Google Drive, dll)
+                                        <input type="url" id="linkFCR" required placeholder="https://..." class="w-full mt-3 bg-white text-gray-800 border border-emerald-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-left">
+                                    </label>
+                                </div>
+                                <div class="border-2 border-dashed border-teal-300 rounded-xl p-6 text-center hover:bg-teal-50 transition-colors">
+                                    <i class="fas fa-link text-3xl text-teal-500 mb-2"></i>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2 cursor-pointer">
+                                        Link Infografis Prosedur RPA (Google Drive, dll)
+                                        <input type="url" id="linkRPA" required placeholder="https://..." class="w-full mt-3 bg-white text-gray-800 border border-teal-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500 transition-all text-left">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnSubmitEval" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex justify-center items-center gap-2 text-lg mt-4">
+                                <i class="fas fa-paper-plane"></i> Submit Evaluasi & Laporan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Score Board (Hidden initially) -->
+            <div id="scoreBoard" class="hidden mt-8 text-center bg-gray-900 rounded-2xl p-8 animate-pop-in">
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-sm mb-2">Nilai Akhir Anda</p>
+                <div class="inline-flex items-center justify-center w-32 h-32 rounded-full border-8 border-emerald-500 mb-4 bg-gray-800">
+                    <span id="finalScore" class="text-5xl font-black text-emerald-400">0</span>
+                </div>
+                <p id="scoreFeedback" class="text-xl font-bold text-white"></p>
+                <p class="text-gray-400 text-sm mt-2">Data nilai dan proyek Anda berhasil tersimpan ke sistem Bapak Fajar.</p>
+            </div>
+
+        </div>
 
     </main>
 
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-8 mt-auto border-t-4 border-emerald-600">
+        <div class="max-w-6xl mx-auto px-6 text-center text-sm">
+            <div class="flex justify-center gap-4 mb-4">
+                <i class="fas fa-leaf text-2xl text-emerald-500"></i>
+            </div>
+            <p class="font-bold text-gray-300">Media Pembelajaran Interaktif Agribisnis Ternak</p>
+            <p class="mt-1">SMK Negeri 2 Purbalingga &copy; 2026</p>
+            <p class="mt-3 opacity-60 text-xs">Desain Khusus: Standar SPA, Realtime Database, UI Interaktif.</p>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT & DATABASE API -->
     <script>
-        // ================= KUNCI JAWABAN KUIS =================
-        const KUNCI_JAWABAN = {
-            q1: "Benar", q2: "Salah", q3: "Salah", q4: "Benar", q5: "Benar",
-            q6: "C", q7: "B", q8: "A", q9: "A", q10: "B"
-        };
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw04kUp75GuTqwCS3fXEfVKccllwtkiddsET9rd1oIHXDDezsh7KAsi3ekI7XWrDJPcVA/exec';
+        let studentsData = {};
 
-        // ================= SCRIPT URL (PASTE DARI DEPLOYMENT BARU DI SINI) =================
-        const scriptUrl = "https://script.google.com/macros/s/AKfycbw04kUp75GuTqwCS3fXEfVKccllwtkiddsET9rd1oIHXDDezsh7KAsi3ekI7XWrDJPcVA/exec";
-        
-        let studentsData = {}; // Object untuk menyimpan { "XI AT 1": ["Fulan", "Fulanah"], ... }
-
-        // ================= INIT: LOAD STUDENTS =================
+        // 1. Inisialisasi: Fetch Data Murid
         document.addEventListener("DOMContentLoaded", () => {
             fetchStudents();
         });
 
         async function fetchStudents() {
             try {
-                const response = await fetch(scriptUrl + "?action=get_students");
+                const response = await fetch(API_URL + "?action=get_students");
                 const res = await response.json();
                 
                 if (res.status === 'success') {
                     studentsData = res.data;
                     populateClassDropdowns();
-                    // Sembunyikan loading
                     document.getElementById('loadingOverlay').style.display = 'none';
                 } else {
                     throw new Error(res.message);
@@ -432,36 +759,29 @@
                 document.getElementById('loadingOverlay').innerHTML = `
                     <div class="text-red-500 text-4xl mb-3"><i class="fas fa-exclamation-circle"></i></div>
                     <h2 class="text-xl font-bold text-red-700">Koneksi Database Gagal</h2>
-                    <p class="text-sm text-slate-500 mt-2 text-center max-w-sm px-4">${error.message}<br><br>Silakan pastikan Apps Script telah di-deploy ulang dan URL benar.</p>
+                    <p class="text-sm text-gray-600 mt-2 text-center max-w-sm px-4">${error.message}<br><br>Periksa URL Apps Script atau koneksi internet.</p>
                 `;
             }
         }
 
+        // 2. Mengisi Dropdown Kelas & Nama
         function populateClassDropdowns() {
-            const selectKelasKasus = document.getElementById('kasusKelas');
+            const selectKelasKasus = document.getElementById('inputKelas');
             const selectKelasEval = document.getElementById('evalKelas');
             
-            // Hapus isi selain opsi default
             selectKelasKasus.innerHTML = '<option value="" disabled selected>-- Pilih Kelas --</option>';
             selectKelasEval.innerHTML = '<option value="" disabled selected>-- Pilih Kelas --</option>';
 
-            // Urutkan kelas agar rapi (XI AT 1, 2, 3)
             const classes = Object.keys(studentsData).sort();
-            
             classes.forEach(kls => {
-                let opt1 = document.createElement('option');
-                opt1.value = kls; opt1.textContent = kls;
-                selectKelasKasus.appendChild(opt1);
-
-                let opt2 = document.createElement('option');
-                opt2.value = kls; opt2.textContent = kls;
-                selectKelasEval.appendChild(opt2);
+                selectKelasKasus.appendChild(new Option(kls, kls));
+                selectKelasEval.appendChild(new Option(kls, kls));
             });
         }
 
         function updateKasusNameDropdown() {
-            const kls = document.getElementById('kasusKelas').value;
-            const selectNama = document.getElementById('kasusNama');
+            const kls = document.getElementById('inputKelas').value;
+            const selectNama = document.getElementById('inputNama');
             updateNameDropdownBase(kls, selectNama);
         }
 
@@ -475,163 +795,209 @@
             selectElement.innerHTML = '<option value="" disabled selected>-- Pilih Nama Anda --</option>';
             if (kls && studentsData[kls]) {
                 selectElement.disabled = false;
-                selectElement.classList.replace('bg-slate-800', 'bg-slate-700'); // Style form kasus
-                selectElement.classList.replace('bg-slate-100', 'bg-white'); // Style form eval
-                
-                // Sort nama abjad
+                selectElement.classList.replace('bg-gray-200', 'bg-white');
                 const sortedNames = [...studentsData[kls]].sort();
                 sortedNames.forEach(nama => {
-                    let opt = document.createElement('option');
-                    opt.value = nama; opt.textContent = nama;
-                    selectElement.appendChild(opt);
+                    selectElement.appendChild(new Option(nama, nama));
                 });
             } else {
                 selectElement.disabled = true;
             }
         }
 
-        // ================= TAB NAVIGATION =================
+        // 3. Tab Navigation
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('bg-white', 'text-green-700', 'border-white');
-                el.classList.add('bg-green-800/40', 'text-white', 'border-transparent');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn flex-1 py-4 md:py-5 px-6 font-bold text-sm md:text-base flex items-center justify-center gap-3 transition-all duration-300 bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700";
             });
+            
             document.getElementById(tabId).classList.add('active');
-            let btnActive = document.getElementById('btn-' + tabId);
-            btnActive.classList.remove('bg-green-800/40', 'text-white', 'border-transparent');
-            btnActive.classList.add('bg-white', 'text-green-700', 'border-white');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.className = "tab-btn flex-1 py-4 md:py-5 px-6 font-bold text-sm md:text-base flex items-center justify-center gap-3 transition-all duration-300 bg-emerald-600 text-white shadow-inner";
         }
 
-        // ================= CUSTOM MODAL =================
-        function showModal(type, title, message) {
+        // 4. Custom Modal 
+        function showModal(title, message, isSuccess = true) {
             const modal = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
             const icon = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const msgEl = document.getElementById('modalMessage');
-
-            titleEl.textContent = title;
-            msgEl.textContent = message;
-
-            if(type === 'success') {
-                icon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 text-3xl bg-green-100 text-green-500';
-                icon.innerHTML = '<i class="fas fa-check"></i>';
-            } else if (type === 'loading') {
-                icon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 text-3xl';
-                icon.innerHTML = '<div class="spinner border-green-200 border-t-green-500"></div>';
+            const iconContainer = document.getElementById('modalIconContainer');
+            
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            
+            if(isSuccess) {
+                icon.className = "fas fa-check text-4xl text-emerald-600";
+                iconContainer.className = "mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-emerald-100 mb-4";
             } else {
-                icon.className = 'w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 text-3xl bg-red-100 text-red-500';
-                icon.innerHTML = '<i class="fas fa-times"></i>';
+                icon.className = "fas fa-exclamation-triangle text-4xl text-amber-600";
+                iconContainer.className = "mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-amber-100 mb-4";
             }
+
             modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
         function closeModal() {
             const modal = document.getElementById('customModal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // ================= AMBIL DATA KASUS API =================
-        async function ambilDataKasus() {
-            const kelas = document.getElementById('kasusKelas').value;
-            const nama = document.getElementById('kasusNama').value;
+        // 5. Animasi Angka
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString('id-ID');
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // 6. Ambil Data Kasus API
+        async function ambilDataKasus(e) {
+            e.preventDefault();
+            const kelas = document.getElementById('inputKelas').value;
+            const nama = document.getElementById('inputNama').value;
             
             if(!kelas || !nama) {
-                showModal('error', 'Identitas Kosong!', 'Silakan pilih Kelas dan Nama Anda terlebih dahulu.');
+                showModal("Peringatan", "Harap pilih kelas dan nama terlebih dahulu!", false);
                 return;
             }
 
-            document.getElementById('btnAmbilData').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghubungkan...';
-            document.getElementById('btnAmbilData').disabled = true;
+            const btn = document.getElementById('btnAmbilData');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghubungkan...';
+            btn.disabled = true;
 
             try {
-                // Panggil API get_case
-                const response = await fetch(`${scriptUrl}?action=get_case&kelas=${encodeURIComponent(kelas)}&nama=${encodeURIComponent(nama)}`);
+                const response = await fetch(`${API_URL}?action=get_case&kelas=${encodeURIComponent(kelas)}&nama=${encodeURIComponent(nama)}`);
                 const res = await response.json();
                 
                 if(res.status === 'success') {
                     const data = res.data;
-                    document.getElementById('valPop').innerHTML = `${data.Populasi_Awal} <span class="text-xs font-normal text-slate-500">ekor</span>`;
-                    document.getElementById('valPakan').innerHTML = `${data.Pakan_Total_kg} <span class="text-xs font-normal text-slate-500">kg</span>`;
-                    document.getElementById('valPanen').innerHTML = `${data.Ayam_Panen_ekor} <span class="text-xs font-normal text-slate-500">ekor</span>`;
-                    document.getElementById('valBobot').innerHTML = `${data.Bobot_Total_kg} <span class="text-xs font-normal text-slate-500">kg</span>`;
-                    document.getElementById('valUmur').innerHTML = `${data.Umur_Panen_hari} <span class="text-xs font-normal text-slate-500">hari</span>`;
+                    document.getElementById('resNama').innerText = nama;
+                    document.getElementById('resKelas').innerText = kelas;
+                    document.getElementById('resKode').innerText = data.ID_Kasus;
                     
-                    // Hitung kematian
-                    const kematian = data.Populasi_Awal - data.Ayam_Panen_ekor;
-                    document.getElementById('valDeplesi').innerHTML = `${kematian} <span class="text-xs font-normal text-red-400">ekor</span>`;
+                    const pop = Number(data.Populasi_Awal) || 0;
+                    const panen = Number(data.Ayam_Panen_ekor) || 0;
+                    const deplesi = pop - panen;
+
+                    animateValue('resPop', 0, pop, 1000);
+                    animateValue('resDep', 0, deplesi, 1000);
+                    animateValue('resFeed', 0, Number(data.Pakan_Total_kg) || 0, 1000);
+                    animateValue('resWeight', 0, Number(data.Bobot_Total_kg) || 0, 1000);
+                    animateValue('resAge', 0, Number(data.Umur_Panen_hari) || 0, 1000);
                     
-                    // Standar FCR
-                    let stdFcr = data.Standar_FCR || "0.00";
-                    document.getElementById('valStandar').innerText = stdFcr;
+                    if (data.Standar_FCR) {
+                        document.getElementById('resStdFCR').innerText = data.Standar_FCR;
+                        document.getElementById('stdFCRContainer').classList.remove('hidden');
+                    }
                     
-                    document.getElementById('kasusIDInfo').innerText = "ID Kasus: #" + data.ID_Kasus;
-                    document.getElementById('hasilKasus').classList.remove('hidden');
+                    const resultBox = document.getElementById('datasetResult');
+                    resultBox.classList.remove('hidden');
+                    setTimeout(() => { resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
                     
-                    showModal('success', 'Berhasil Dikunci!', `Halo ${nama}, kasus #${data.ID_Kasus} telah resmi menjadi tugasmu. Teman di kelasmu tidak bisa mengambil kasus ini lagi.`);
+                    showModal("Terkunci!", `Kasus #${data.ID_Kasus} resmi ditugaskan untukmu. Teman di kelasmu tidak bisa mengambil kasus ini lagi.`);
                 } else {
-                    showModal('error', 'Gagal', res.message);
+                    showModal("Gagal", res.message, false);
                 }
             } catch (error) {
-                showModal('error', 'Koneksi Terputus', 'Gagal terhubung ke Database. Pastikan internet lancar.');
+                showModal("Koneksi Terputus", "Gagal terhubung ke Database.", false);
             } finally {
-                document.getElementById('btnAmbilData').innerHTML = '<i class="fas fa-cloud-download-alt"></i> Ambil Kasus Saya';
-                document.getElementById('btnAmbilData').disabled = false;
+                btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Ambil Data Tugas Praktikum';
+                btn.disabled = false;
             }
         }
 
-        // ================= SUBMIT EVALUASI POST =================
-        async function submitEvaluasi(event) {
-            event.preventDefault();
+        // 7. Submit Evaluasi POST
+        async function submitEvaluation(e) {
+            e.preventDefault();
+            const form = document.getElementById('evaluationForm');
+            let score = 0;
             
-            const kelas = document.getElementById('evalKelas').value;
             const nama = document.getElementById('evalNama').value;
+            const kelas = document.getElementById('evalKelas').value;
             
             if(!kelas || !nama) {
-                showModal('error', 'Identitas Belum Lengkap', 'Pilih Kelas dan Nama Anda terlebih dahulu.');
+                showModal("Peringatan", "Pilih Kelas dan Nama Anda terlebih dahulu.", false);
                 return;
             }
 
-            // Hitung nilai kuis
-            let skor = 0;
-            for(let i=1; i<=10; i++) {
-                const answer = document.querySelector(`input[name="q${i}"]:checked`);
-                if(answer && answer.value === KUNCI_JAWABAN[`q${i}`]) {
-                    skor += 10;
+            const answersTF = { q1: 'salah', q2: 'salah', q3: 'benar', q4: 'benar', q5: 'salah' };
+            for(let key in answersTF) {
+                const checked = form.querySelector(`input[name="${key}"]:checked`);
+                if(checked && checked.value === answersTF[key]) score += 10;
+            }
+
+            const complexAns = {
+                q6: ['a', 'c'], q7: ['a', 'c', 'd'], q8: ['a', 'c'], q9: ['a', 'b', 'c'], q10: ['a', 'c']
+            };
+
+            for (let i = 6; i <= 10; i++) {
+                const qName = 'q' + i;
+                const checkedBoxes = Array.from(form.querySelectorAll(`input[name="${qName}"]:checked`)).map(cb => cb.value);
+                const correctArr = complexAns[qName];
+                if (checkedBoxes.length === correctArr.length && checkedBoxes.every(val => correctArr.includes(val))) {
+                    score += 10;
                 }
             }
 
             const payload = {
                 kelas: kelas,
                 nama: nama,
-                nilai_kuis: skor,
+                nilai_kuis: score,
                 link_fcr: document.getElementById('linkFCR').value,
                 link_rpa: document.getElementById('linkRPA').value
             };
 
-            const btn = document.getElementById('btnSubmit');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim Data...';
+            const btn = document.getElementById('btnSubmitEval');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan ke Server...';
             btn.disabled = true;
 
             try {
-                const response = await fetch(scriptUrl, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                // Karena no-cors, kita asumsikan berhasil jika tidak error jaringan
-                document.getElementById('evaluasiForm').reset();
-                showModal('success', 'Tugas Berhasil Dikirim!', `Nilai Kuis Kognitif Anda: ${skor}/100. Bukti link tugas telah tersimpan di Database Bapak Guru.`);
+                const sBoard = document.getElementById('scoreBoard');
+                const finalScoreElem = document.getElementById('finalScore');
+                const feedback = document.getElementById('scoreFeedback');
                 
-            } catch (error) {
-                showModal('error', 'Gagal Mengirim', 'Pastikan koneksi internet stabil.');
+                sBoard.classList.remove('hidden');
+                animateValue('finalScore', 0, score, 1500);
+
+                setTimeout(() => {
+                    if(score >= 80) {
+                        feedback.innerText = `Luar Biasa! Pemahaman Anda setara Manajer Farm.`;
+                        finalScoreElem.className = "text-5xl font-black text-emerald-400";
+                    } else if(score >= 60) {
+                        feedback.innerText = `Cukup Baik! Pelajari materi lebih detail lagi ya.`;
+                        finalScoreElem.className = "text-5xl font-black text-yellow-400";
+                    } else {
+                        feedback.innerText = `Kurang! Anda harus mengulang membaca materi dari awal.`;
+                        finalScoreElem.className = "text-5xl font-black text-red-400";
+                    }
+                    showModal("Terkirim Sempurna!", `Terima kasih, ${nama}.\nNilai Anda: ${score}/100.\nSemua data berhasil tersimpan di sistem Bapak Fajar.`);
+                    sBoard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    form.reset();
+                }, 500);
+            } catch(err) {
+                showModal("Gangguan Jaringan", "Terjadi kesalahan saat mengirim data ke server. Periksa koneksi internet Anda.", false);
             } finally {
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Evaluasi & Tugas';
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Evaluasi & Laporan';
                 btn.disabled = false;
             }
         }
